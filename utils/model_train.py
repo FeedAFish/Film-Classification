@@ -6,6 +6,9 @@ import torch.nn.functional as F
 import torch.optim as optim
 
 from utils.dataloader import Dataset
+from tqdm.auto import tqdm
+
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 class SimpleNN(nn.Module):
@@ -30,39 +33,58 @@ class SimpleNN(nn.Module):
         x = self.fc3(x)
         return x
 
-    def train(
+    def train_one_epoch(
+        self,
+        train_loader,
+        optimizer,
+        criterion,
+    ):
+        train_loss = 0
+        train_correct = 0
+        counter = 0
+        for _, data in tqdm(enumerate(train_loader), total=len(train_loader)):
+            counter += 1
+            inputs, labels = data
+            inputs = inputs.to(device)
+            labels = labels.to(device)
+            optimizer.zero_grad()
+
+            outputs = self(inputs)
+            loss = criterion(outputs, labels)
+            train_loss += loss.item()
+
+            _, pred = torch.max(outputs.data, 1)
+            train_correct += (pred == labels).sum().item()
+
+            loss.backward()
+            optimizer.step()
+
+        return train_loss / counter, 100.0 * train_correct / len(train_loader.dataset)
+
+    def train_epochs(
         self,
         data,
         optimizer=optim.Adam,
         criterion=nn.CrossEntropyLoss(),
-        save_file=None,
-        epochs=10,
+        learning_rate=0.001,
+        epochs: int = 10,
+        save_file: str = None,
     ):
-        if not data:
-            return
-        train_loader = torch.utils.data.DataLoader(
-            data.data_train, batch_size=64, shuffle=True
-        )
-        opti = optimizer(self.parameters(), 1e-3)
+        train_loader = DataLoader(data.data_train, batch_size=64, shuffle=True)
+        self.train()
+
+        optimizer = optimizer(self.parameters(), lr=learning_rate)
+
         for epoch in range(epochs):
-            running_loss = 0.0
-            for i, data in enumerate(train_loader, 0):
-                inputs, labels = data
+            print(f"Epoch {epoch + 1}/{epochs}")
+            train_loss, train_acc = self.train_one_epoch(
+                train_loader, optimizer, criterion
+            )
+            print(f"Train loss: {train_loss:.4f}, Train accuracy: {train_acc:.2f}%")
 
-                opti.zero_grad()
+        if save_file is not None:
+            torch.save(self, save_file, weights_only=False)
 
-                outputs = self(inputs)
-                loss = criterion(outputs, labels)
-                loss.backward()
-                opti.step()
-
-                running_loss += loss.item()
-                if i % 2000 == 1999:  # print every 2000 mini-batches
-                    print(
-                        "[%d, %5d] loss: %.3f" % (epoch + 1, i + 1, running_loss / 2000)
-                    )
-                    running_loss = 0.0
-
-        if save_file:
-            torch.save(self, save_file)
-        print("Finished Training")
+    @classmethod
+    def load_model(cls, path: str):
+        return torch.load(path, weights_only=False)
