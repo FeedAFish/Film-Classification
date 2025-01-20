@@ -4,15 +4,15 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
+from torchvision import transforms
 
-from utils.dataloader import Dataset
 from tqdm.auto import tqdm
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 class SimpleNN(nn.Module):
-    def __init__(self):
+    def __init__(self, output_channel=10):
         super(SimpleNN, self).__init__()
         self.cv1 = nn.Conv2d(3, 32, 2)
         self.cv2 = nn.Conv2d(32, 16, 2)
@@ -21,7 +21,8 @@ class SimpleNN(nn.Module):
         conv_output_size = 253 * 177 * 8
         self.fc1 = nn.Linear(conv_output_size, 128)
         self.fc2 = nn.Linear(128, 64)
-        self.fc3 = nn.Linear(64, 10)
+        self.fc3 = nn.Linear(64, output_channel)
+        self.classes = None
 
     def forward(self, x):
         x = F.relu(self.cv1(x))
@@ -39,6 +40,17 @@ class SimpleNN(nn.Module):
         optimizer,
         criterion,
     ):
+        """
+        Train model for one epoch.
+
+        Args:
+            train_loader: A DataLoader that loads in batches the data to train the model.
+            optimizer: The optimizer to use to train the model.
+            criterion: The loss function to use to calculate the loss.
+
+        Returns:
+            A tuple containing the average loss and accuracy of the model in this epoch.
+        """
         train_loss = 0
         train_correct = 0
         counter = 0
@@ -70,6 +82,11 @@ class SimpleNN(nn.Module):
         epochs: int = 10,
         save_file: str = None,
     ):
+        if not self.classes:
+            self.classes = data.data_train.classes
+        if not set(data.data_train.classes).issubset(self.classes):
+            print("New classes not recognised in new dataset")
+            return
         train_loader = DataLoader(data.data_train, batch_size=64, shuffle=True)
         self.train()
 
@@ -83,8 +100,35 @@ class SimpleNN(nn.Module):
             print(f"Train loss: {train_loss:.4f}, Train accuracy: {train_acc:.2f}%")
 
         if save_file is not None:
-            torch.save(self, save_file, weights_only=False)
+            torch.save(self.state_dict(), save_file)
 
     @classmethod
     def load_model(cls, path: str):
-        return torch.load(path, weights_only=False)
+        model = cls()
+        model.load_state_dict(torch.load(path, weights_only=True))
+        model.eval()
+        return model
+
+    def transform_image(self, img):
+        transform = transforms.Compose(
+            [
+                transforms.Resize((256, 180)),
+                transforms.ToTensor(),
+            ]
+        )
+        return transform(img).unsqueeze(0)
+
+    def predict(self, img):
+        """Predict class of an image.
+
+        Args:
+            img: A PIL image.
+
+        Returns:
+            An integer representing the predicted class of the image."""
+        with torch.no_grad():
+            return torch.argmax(self(self.transform_image(img)))
+
+    def predict_tensor(self, img):
+        with torch.no_grad():
+            return torch.argmax(self(img.unsqueeze(0)))
