@@ -17,7 +17,7 @@ parser.add_argument(
 parser.add_argument(
     "-d",
     "--data",
-    default=r"1-1OSGlN2EOqyZuehBgpgI8FNOtK-caYf",
+    default=r"1qNOpvoebvdfoEGf7IUHxXAf8mEWD0z48",
     help="Data id on google drive. Must be a zip file that is well-fitted pytorch.ImageFolder",
 )
 parser.add_argument(
