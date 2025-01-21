@@ -100,13 +100,21 @@ class SimpleNN(nn.Module):
             print(f"Train loss: {train_loss:.4f}, Train accuracy: {train_acc:.2f}%")
 
         if save_file is not None:
-            torch.save(self.state_dict(), save_file)
+            torch.save(
+                {
+                    "model_state_dict": self.state_dict(),
+                    "classes": self.classes,  # Save the classes attribute
+                },
+                save_file,
+            )
 
     @classmethod
     def load_model(cls, path: str):
+        """Load model with its configuration"""
+        checkpoint = torch.load(path)
         model = cls()
-        model.load_state_dict(torch.load(path, weights_only=True))
-        model.eval()
+        model.classes = checkpoint["classes"]
+        model.load_state_dict(checkpoint["model_state_dict"])
         return model
 
     def transform_image(self, img):

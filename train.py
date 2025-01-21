@@ -23,7 +23,15 @@ parser.add_argument(
 parser.add_argument(
     "-i",
     "--input",
-    help="Continue train for a trained model. Default = 'model.mdl'",
+    help="Continue train for a trained model.",
+)
+
+parser.add_argument(
+    "-e",
+    "--epochs",
+    default=15,
+    type=int,
+    help="Number of epochs to train. Default = 15",
 )
 
 args = parser.parse_args()
@@ -38,4 +46,4 @@ if args.input:
 else:
     model = train.SimpleNN(len(data.data_train.classes))
 
-model.train_epochs(data, save_file=args.output, epochs=15)
+model.train_epochs(data, save_file=args.output, epochs=args.epochs)
