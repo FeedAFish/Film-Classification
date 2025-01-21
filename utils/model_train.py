@@ -111,7 +111,7 @@ class SimpleNN(nn.Module):
     @classmethod
     def load_model(cls, path: str):
         """Load model with its configuration"""
-        checkpoint = torch.load(path)
+        checkpoint = torch.load(path, weights_only=False)
         model = cls()
         model.classes = checkpoint["classes"]
         model.load_state_dict(checkpoint["model_state_dict"])
