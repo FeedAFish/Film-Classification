@@ -5,7 +5,7 @@ import argparse
 parser = argparse.ArgumentParser(
     prog="Image Classification",
     description="Train supervised learning model that clasify images",
-    epilog="---",
+    epilog="-" * 50,
 )
 parser.add_argument(
     "-o",
@@ -29,9 +29,9 @@ parser.add_argument(
 parser.add_argument(
     "-e",
     "--epochs",
-    default=15,
+    default=20,
     type=int,
-    help="Number of epochs to train. Default = 15",
+    help="Number of epochs to train. Default = 20",
 )
 
 args = parser.parse_args()

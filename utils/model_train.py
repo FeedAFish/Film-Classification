@@ -140,3 +140,7 @@ class SimpleNN(nn.Module):
     def predict_tensor(self, img):
         with torch.no_grad():
             return torch.argmax(self(img.unsqueeze(0)))
+
+    def get_ouput(self, img):
+        with torch.no_grad():
+            return self(self.transform_image(img))
