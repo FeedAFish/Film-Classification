@@ -6,11 +6,12 @@ import numpy as np
 from torchvision import datasets, transforms
 
 
-def down_n_extract(id=r"1-1OSGlN2EOqyZuehBgpgI8FNOtK-caYf", directory="data"):
-    if not os.path.exists(f"{directory}.zip"):
-        gdown.download(id=id, output=f"{directory}.zip")
+def down_n_extract(id="1-1OSGlN2EOqyZuehBgpgI8FNOtK-caYf", directory="data"):
+    zip_path = f"{directory}.zip"
     if not os.path.exists(directory):
-        with zipfile.ZipFile(f"{directory}.zip", "r") as zip_ref:
+        if not os.path.exists(zip_path):
+            gdown.download(id=id, output=zip_path, quiet=False)
+        with zipfile.ZipFile(zip_path, "r") as zip_ref:
             zip_ref.extractall(directory)
     else:
         print("Directory already exists")
