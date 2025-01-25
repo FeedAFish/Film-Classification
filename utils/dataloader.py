@@ -2,7 +2,6 @@ import gdown
 import os
 import zipfile
 import matplotlib.pyplot as plt
-import numpy as np
 from torchvision import datasets, transforms
 
 
