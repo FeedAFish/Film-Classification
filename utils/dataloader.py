@@ -3,6 +3,8 @@ import os
 import zipfile
 import matplotlib.pyplot as plt
 from torchvision import datasets, transforms
+from scipy.spatial import KDTree
+import numpy as np
 
 
 def down_n_extract(id="1-1OSGlN2EOqyZuehBgpgI8FNOtK-caYf", directory="data"):
@@ -67,7 +69,7 @@ class Dataset:
 
         Args:
             indices (list): A list of indices to select images from the dataset.
-            model: A trained model used to predict the class of each image. Need predict_tensor() method
+            model: A trained model used to predict the class of each image. Need predict() method
 
         The function plots the images in a grid with their true labels and the model's predicted labels.
         """
@@ -80,7 +82,7 @@ class Dataset:
         axes = axes.flatten()
         for i, ax in enumerate(axes[: len(indices)]):
             img, label = self.dataset[indices[i]]
-            predict = model.predict_tensor(img)
+            predict = model.predict(img)
             ax.imshow(img.permute(1, 2, 0))  # Convert (C, H, W) to (H, W, C)
             ax.set_title(
                 f"TG: {self.dataset.classes[label]} \n Model: {self.dataset.classes[predict]}"
@@ -90,3 +92,25 @@ class Dataset:
             ax.axis("off")
         fig.tight_layout()
         plt.show()
+
+    def make_kdtree(self, model, savefile=None):
+        data = np.array([[0.0] * len(self.dataset.classes) for _ in self.dataset])
+        for i in range(len(self.dataset)):
+            data[i] = model.get_ouput(self.dataset[i][0])
+
+        tree = KDTree(data)
+        self.tree = tree
+        if savefile:
+            np.save(savefile, data)
+
+    def load_kdtree(self, datafile):
+        data = np.load(datafile)
+        self.tree = KDTree(data)
+
+    def get_similar_images_indices(self, img, model, k=5):
+        img = model.get_ouput(img)
+        _, indices = self.tree.query(img.reshape(1, -1), k=k)
+        return indices[0]
+
+    def indices_to_images(self, indices):
+        return [self.dataset[i][0].permute(1, 2, 0) for i in indices]
