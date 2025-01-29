@@ -135,12 +135,14 @@ class SimpleNN(nn.Module):
         Returns:
             An integer representing the predicted class of the image."""
         with torch.no_grad():
-            return torch.argmax(self(self.transform_image(img)))
-
-    def predict_tensor(self, img):
-        with torch.no_grad():
-            return torch.argmax(self(img.unsqueeze(0)))
+            if torch.is_tensor(img):
+                return torch.argmax(self(img.unsqueeze(0)))
+            else:
+                return torch.argmax(self(self.transform_image(img)))
 
     def get_ouput(self, img):
         with torch.no_grad():
-            return self(self.transform_image(img))
+            if torch.is_tensor(img):
+                return self(img.unsqueeze(0))
+            else:
+                return self(self.transform_image(img))
