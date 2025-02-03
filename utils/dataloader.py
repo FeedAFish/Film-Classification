@@ -2,6 +2,7 @@ import gdown
 import os
 import zipfile
 import matplotlib.pyplot as plt
+import sqlite3
 from torchvision import datasets, transforms
 from scipy.spatial import KDTree
 import numpy as np
@@ -93,7 +94,7 @@ class Dataset:
         fig.tight_layout()
         plt.show()
 
-    def make_kdtree(self, model, savefile=None):
+    def make_kdtree(self, model, table="KDTree_Film", savefile=None):
         data = np.array([[0.0] * len(self.dataset.classes) for _ in self.dataset])
         for i in range(len(self.dataset)):
             data[i] = model.get_ouput(self.dataset[i][0])
@@ -101,11 +102,45 @@ class Dataset:
         tree = KDTree(data)
         self.tree = tree
         if savefile:
-            np.save(savefile, data)
+            self.save_to_db(savefile, data, table)
 
-    def load_kdtree(self, datafile):
-        data = np.load(datafile)
-        self.tree = KDTree(data)
+    def save_to_db(self, database, data=None, table="KDTree_Film"):
+        conn = sqlite3.connect(database)
+        cursor = conn.cursor()
+
+        keys = (
+            "(id INTEGER PRIMARY KEY "
+            + ", ".join(
+                [
+                    f"{self.dataset.classes[i]} REAL"
+                    for i in range(len(self.dataset.classes))
+                ]
+            )
+            + ")"
+        )
+
+        cursor.execute(f"CREATE TABLE IF NOT EXISTS {table} {keys}")
+
+        for i in range(len(data)):
+            values = tuple(data[i])
+            cursor.execute(
+                f"INSERT INTO KDTree_Film VALUES ({i}, {', '.join(['?' for _ in range(len(self.dataset.classes))])})",
+                values,
+            )
+
+        conn.commit()
+        conn.close()
+
+    def load_kdtree(self, database: str, table="KDTree_Film"):
+        conn = sqlite3.connect(database)
+        cursor = conn.cursor()
+
+        query = f"SELECT {', '.join(self.dataset.classes)} FROM {table}"  # Modify query as needed
+        cursor.execute(query)
+        rows = cursor.fetchall()
+        data_from_db = np.array(rows)
+        tree = KDTree(data_from_db)
+        self.tree = tree
 
     def get_similar_images_indices(self, img, model, k=5):
         img = model.get_ouput(img)
