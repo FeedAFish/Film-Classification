@@ -122,6 +122,7 @@ class SimpleNN(nn.Module):
             [
                 transforms.Resize((256, 180)),
                 transforms.ToTensor(),
+                transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
             ]
         )
         return transform(img).unsqueeze(0)
