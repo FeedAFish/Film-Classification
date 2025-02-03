@@ -28,8 +28,7 @@ except:
     print("Model not found")
     exit()
 
-# data.make_kdtree(model, "data.npy")
-data.load_kdtree("data.npy")
+data.load_kdtree("data.db")
 
 
 @app.post("/predict")
