@@ -180,3 +180,4 @@ test*.*
 data.*
 data/
 model.mdl
+requirements.txt

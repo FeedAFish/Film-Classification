@@ -3,6 +3,9 @@ import requests
 from io import BytesIO
 from PIL import Image
 import base64
+import os
+
+API_URL = os.getenv("API_URL", "http://localhost:8000")
 
 
 def predict_via_api(image):
@@ -15,11 +18,11 @@ def predict_via_api(image):
 
     # Create file-like object for API request
     files = {"file": ("image.jpg", img_byte_arr, "image/jpeg")}
-    response = requests.post("http://127.0.0.1:8000/predict", files=files)
+    response = requests.post(f"{API_URL}/predict", files=files)
     result = response.json()
     class_result = result["Prediction"]
     # Get recommendation
-    response = requests.post("http://127.0.0.1:8000/recommend", files=files)
+    response = requests.post("{API_URL}/recommend", files=files)
     recommended_64 = response.json()["Recommendations"]
     recommended_images = []
     for img_64 in recommended_64:
