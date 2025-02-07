@@ -22,7 +22,7 @@ def predict_via_api(image):
     result = response.json()
     class_result = result["Prediction"]
     # Get recommendation
-    response = requests.post("{API_URL}/recommend", files=files)
+    response = requests.post(f"{API_URL}/recommend", files=files)
     recommended_64 = response.json()["Recommendations"]
     recommended_images = []
     for img_64 in recommended_64:
