@@ -2,7 +2,7 @@
 
 This project provides a web interface for film poster classification and recommendation using deep learning.
 
-Film classification can be replaced with other dataset and classification (animal, etc)
+> Note: This system can be adapted for other image classification tasks (e.g., animals, objects, etc.)
 
 ## Features
 - Image classification of film posters
@@ -15,33 +15,37 @@ Film classification can be replaced with other dataset and classification (anima
 - Python 3.9+
 - CUDA-compatible GPU (optional)
 
-## Installation and Run Local
+## Installation and Setup
 
-Clone the repository:
+### 1. Local Python Setup
 ```bash
+# Clone the repository
 git clone https://github.com/yourusername/Film-Classification.git
 cd Film-Classification
-```
 
-1. Python
-
-```bash
+# Install dependencies
 pip install -r requirements-be.txt -r requirements-fe.txt
-python ./api_server.py & ./gradio_launch.py
+
+# Run the application
+# For Windows
+start python api_server.py & start python gradio_launch.py
+
+# For Linux
+python api_server.py & python gradio_launch.py &
 ```
 
-2. Docker
+### 2. Docker Setup
 ```bash
 docker-compose up --build
 ```
+
 ## Usage
 
-1. Access the web interface:
-   - Local: http://localhost:7860
+1. Access the web interface at http://localhost:7860
 
 2. Upload an image:
    - Click the upload area or drag & drop a film poster
-   - The system will classify the image and show similar recommendations
+   - Wait for classification results and similar recommendations
 
 ## Project Structure
 ```
@@ -53,15 +57,19 @@ Film-Classification/
 ├── frontend.Dockerfile   # Frontend container configuration
 ├── backend.Dockerfile    # Backend container configuration
 └── .gitignore
-
 ```
 
-## API Endpoints
+## API Documentation
 
+### Endpoints
 - `/predict`: Classification endpoint
 - `/recommend`: Recommendation endpoint
 
-## Environment Variables
-
+### Environment Variables
 - `API_URL`: Backend API URL (default: http://localhost:8000)
 
+## Limitations and Notes
+
+- Currently works with local `sqlite3` database only
+- For production deployment with different databases, modify `load_kdtree` method in `utils/dataloader.py`
+- Model files and data are not included in the repository
