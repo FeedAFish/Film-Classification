@@ -1,14 +1,18 @@
 from fastapi import FastAPI, UploadFile, File
 from PIL import Image
 import io
+import os
 import uvicorn
 from utils import model_train as train
 import argparse
 import base64
-
+import torch
 from utils import dataloader
 
 data = dataloader.Dataset("data")
+
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 app = FastAPI()
 
 # Load model on startup
@@ -23,7 +27,9 @@ args = parser.parse_args()
 
 try:
     model = train.SimpleNN.load_model(args.model_path)
+    model = model.to(device)
     model.eval()
+    torch.set_grad_enabled(False)  # Disable gradient computation
 except:
     print("Model not found")
     exit()
@@ -52,19 +58,18 @@ async def recommend_image(file: UploadFile = File(...)):
     # Convert tensor images to bytes
     image_64 = []
     for tensor_img in similar_images:
-        tensor_new = tensor_img.mul(255).clamp(0, 255).byte()
-        # Convert tensor to numpy array and transpose to correct format
-        img_np = tensor_new.numpy()
-        # Convert to PIL Image
-
-        img_pil = Image.fromarray(img_np)
-        # Convert to bytes
-        buffer = io.BytesIO()
-        img_pil.save(buffer, format="jpeg")
-        image_64.append(base64.b64encode(buffer.getvalue()).decode("utf-8"))
+        with torch.no_grad():  # Disable gradient tracking
+            tensor_new = tensor_img.mul(255).clamp(0, 255).byte()
+            img_np = tensor_new.cpu().numpy()
+            img_pil = Image.fromarray(img_np)
+            buffer = io.BytesIO()
+            img_pil.save(buffer, format="jpeg", quality=85, optimize=True)
+            image_64.append(base64.b64encode(buffer.getvalue()).decode("utf-8"))
 
     return {"Recommendations": image_64}
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    PORT = int(os.getenv("PORT", 8000))
+    HOST = os.getenv("HOST", "0.0.0.0" if os.getenv("DOCKER") else "127.0.0.1")
+    uvicorn.run(app, host=HOST, port=PORT)

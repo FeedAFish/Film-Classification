@@ -5,7 +5,7 @@ from PIL import Image
 import base64
 import os
 
-API_URL = os.getenv("API_URL", "http://localhost:8000")
+API_URL = os.getenv("API_URL", "http://127.0.0.1:8000")
 
 
 def predict_via_api(image):
