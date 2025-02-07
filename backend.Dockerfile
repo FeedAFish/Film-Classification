@@ -9,6 +9,4 @@ COPY utils/ ./utils/
 COPY data/ ./data/
 COPY model.mdl .
 
-EXPOSE 8000
-
 CMD ["python", "api_server.py"]
