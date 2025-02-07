@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   frontend:
     build:
@@ -9,6 +7,8 @@ services:
       - "7860:7860"
     environment:
       - API_URL=http://backend:8000
+    depends_on:
+      - backend
     networks:
       - app_network
 
@@ -22,6 +22,11 @@ services:
       - ./data:/app/data
       - ./data.db:/app/data.db
       - ./model.mdl:/app/model.mdl
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8000/docs" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     networks:
       - app_network
 
