@@ -72,4 +72,7 @@ Film-Classification/
 
 - Currently works with local `sqlite3` database only
 - For production deployment with different databases, modify `load_kdtree` method in `utils/dataloader.py`
-- Model files and data are not included in the repository
+- To use the demo data and model, run:
+```bash
+python demo_dl.py
+```
