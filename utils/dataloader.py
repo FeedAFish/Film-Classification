@@ -9,6 +9,21 @@ import numpy as np
 
 
 def down_n_extract(id="1-1OSGlN2EOqyZuehBgpgI8FNOtK-caYf", directory="data"):
+    """
+    Downloads a zip file from Google Drive and extracts it to a given directory.
+
+    Parameters
+    ----------
+    id : str, optional
+        The id of the zip file in Google Drive. Defaults to "1-1OSGlN2EOqyZuehBgpgI8FNOtK-caYf".
+    directory : str, optional
+        The path to the directory where the zip file should be extracted. Defaults to "data".
+
+    Returns
+    -------
+    None
+    """
+
     zip_path = f"{directory}.zip"
     if not os.path.exists(directory):
         if not os.path.exists(zip_path):
@@ -99,8 +114,8 @@ class Dataset:
         for i in range(len(self.dataset)):
             data[i] = model.get_ouput(self.dataset[i][0])
 
-        tree = KDTree(data)
-        self.tree = tree
+        data_tree = KDTree(data)
+        self.tree = data_tree
         if savefile:
             self.save_to_db(savefile, data, table)
 
@@ -139,8 +154,8 @@ class Dataset:
         cursor.execute(query)
         rows = cursor.fetchall()
         data_from_db = np.array(rows)
-        tree = KDTree(data_from_db)
-        self.tree = tree
+        data_tree = KDTree(data_from_db)
+        self.tree = data_tree
 
     def get_similar_images_indices(self, img, model, k=5):
         img = model.get_ouput(img)

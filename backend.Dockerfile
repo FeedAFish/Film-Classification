@@ -5,8 +5,11 @@ COPY requirements-be.txt .
 RUN pip install -r requirements-be.txt
 
 COPY api_server.py .
+COPY demo_dl.py .
 COPY utils/ ./utils/
-COPY data/ ./data/
-COPY model.mdl .
+
+RUN python demo_dl.py
+
+ENV DOCKER=true
 
 CMD ["python", "api_server.py"]
