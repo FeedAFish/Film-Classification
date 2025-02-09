@@ -35,10 +35,13 @@ python api_server.py & python gradio_launch.py &
 ```
 
 ### 2. Docker Setup
+
 ```bash
-docker-compose up --build
+# For demo
+docker-compose up --build 
 ```
 
+> Note: In case you want a new container with new dataset and model, please make modification inside `backend.Dockerfile`
 ## Usage
 
 1. Access the web interface at http://localhost:7860
