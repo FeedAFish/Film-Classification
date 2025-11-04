@@ -72,4 +72,5 @@ async def recommend_image(file: UploadFile = File(...)):
 if __name__ == "__main__":
     PORT = int(os.getenv("PORT", 8000))
     HOST = os.getenv("HOST", "0.0.0.0" if os.getenv("DOCKER") else "127.0.0.1")
+
     uvicorn.run(app, host=HOST, port=PORT)
